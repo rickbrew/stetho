@@ -196,12 +196,14 @@ public final class ShadowDocument implements DocumentView {
     }
 
     private void setElementParent(Object element, Object parentElement) {
+      // no-op: setElementParent(e, pE) called twice+ with no intermediate call of setElementParent(e, pE2)
       ElementInfo changesElementInfo = mElementToInfoChangesMap.get(element);
       if (changesElementInfo != null &&
           parentElement == changesElementInfo.parentElement) {
         return;
       }
 
+      // no-op: setElementParent(e, pE) called with pE equal to pre-transaction value
       ElementInfo oldElementInfo = mElementToInfoMap.get(element);
       if (changesElementInfo == null &&
           oldElementInfo != null &&
@@ -233,7 +235,15 @@ public final class ShadowDocument implements DocumentView {
 
       if (parentElement == null) {
         mRootElementChanges.add(element);
+      } else {
+        if (mRootElementChanges.contains(element)) {
+          //int x = 5; ++x;
+          mRootElementChanges.remove(element);
+        }
       }
+
+
+      // VERIFY: do we need to add this? [else { mRootElementChanges.remove(element); }]
     }
 
     public Update build() {
@@ -322,6 +332,10 @@ public final class ShadowDocument implements DocumentView {
         final Object expectedParent = (element == expectedParent0) ? null : expectedParent0;
         final ElementInfo newElementInfo = getElementInfo(element);
 
+        if (newElementInfo == null) {
+          int x = 5; ++x;
+        }
+
         if (newElementInfo.parentElement == expectedParent) {
           accumulator.store(element);
 
@@ -365,7 +379,17 @@ public final class ShadowDocument implements DocumentView {
       final ElementInfo elementInfo = elementToInfoMap.get(element);
       elementToInfoMap.remove(element);
       for (int i = 0, N = elementInfo.children.size(); i < N; ++i) {
-        removeSubTree(elementToInfoMap, elementInfo.children.get(i));
+        //
+        Object childElement = elementInfo.children.get(i);
+        ElementInfo childElementInfo = elementToInfoMap.get(childElement);
+        if (childElementInfo == null) {
+          int x = 5; ++x;
+        } else if (childElementInfo.parentElement != element) {
+          int x = 5; ++x;
+        }
+        //
+
+        removeSubTree(elementToInfoMap, elementInfo.children.get(i)); // VERIFY: elementToInfoMap.get(elementInfo.children.get(i)).parentElement == element
       }
     }
   }

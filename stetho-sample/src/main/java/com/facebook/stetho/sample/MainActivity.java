@@ -14,6 +14,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -33,6 +35,26 @@ public class MainActivity extends Activity {
 
     findViewById(R.id.settings_btn).setOnClickListener(mMainButtonClicked);
     findViewById(R.id.apod_btn).setOnClickListener(mMainButtonClicked);
+
+    final LinearLayout container1 = (LinearLayout) findViewById(R.id.apod_container1);
+    final LinearLayout container2 = (LinearLayout) findViewById(R.id.apod_container2);
+    findViewById(R.id.stupid_button).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(final View v) {
+        final Button button = (Button) v;
+        if (button.getParent() == container1) {
+
+          container1.removeView(v);
+          container2.addView(v);
+          button.setText("2");
+
+        } else if (button.getParent() == container2) {
+          container2.removeView(v);
+          container1.addView(v);
+          button.setText("1");
+        }
+      }
+    });
   }
 
   private static boolean isStethoPresent() {
